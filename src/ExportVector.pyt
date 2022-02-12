@@ -71,7 +71,15 @@ class MapExporter(object):
             datatype="GPMap",
             parameterType="Required",
             direction="Input")
-        params = [sourcemap]
+
+        sourcelayer = arcpy.Parameter(
+            displayName="Vector layer",
+            name="in_featurelayer",
+            datatype="GPFeatureLayer",
+            parameterType="Required",
+            direction="Input")
+
+        params = [sourcemap, sourcelayer]
         return params
 
     def isLicensed(self):
@@ -94,4 +102,7 @@ class MapExporter(object):
         aprx = arcpy.mp.ArcGISProject("CURRENT")
         map_to_export = aprx.listMaps(parameters[0].value)[0]
         map_to_export.defaultView.exportToPNG('test.png', 1000, 1000)
+
+        arcpy.conversion.LayerToKML(parameters[1].value, 'test.kmz')
+        arcpy.conversion.TableToTable(parameters[1].value, "./", "out.csv")
         return
