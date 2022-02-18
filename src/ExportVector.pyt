@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import arcpy
+import pandas as pd
+from arcgis.features import GeoAccessor, GeoSeriesAccessor
+import sys
+sys.path.append('../libs/implekml')
+import simplekml
 
 class Toolbox(object):
     def __init__(self):
@@ -103,6 +108,24 @@ class MapExporter(object):
         map_to_export = aprx.listMaps(parameters[0].value)[0]
         map_to_export.defaultView.exportToPNG('test.png', 1000, 1000)
 
-        arcpy.conversion.LayerToKML(parameters[1].value, 'test.kmz')
+        ##CSV export
         arcpy.conversion.TableToTable(parameters[1].value, "./", "out.csv")
+
+        ##KML export
+        #Reproject featureclass to WGS84
+        out_coordinate_system = arcpy.SpatialReference(4326)
+        arcpy.env.addOutputsToMap = False
+        arcpy.Project_management(parameters[1].value, parameters[1].value.name + "_wgs84", out_coordinate_system)
+
+        #Create a spatially enabled dataframe from featureclass
+        sdf = pd.DataFrame.spatial.from_featureclass(parameters[1].value.name + "_wgs84")
+        sdf = sdf.drop('OBJECTID', axis=1)
+
+        #Export data to KML
+        kml = simplekml.Kml()
+        sdf.apply(lambda X: kml.newpoint(name=X["Name"], coords=[( X["SHAPE"]["x"],X["SHAPE"]["y"])]) ,axis=1)
+        kml.save(path = "data.kml")
+
+        #Cleanup temporary layer created for reprojection
+        arcpy.Delete_management(parameters[1].value.name + "_wgs84")
         return
