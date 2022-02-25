@@ -3,8 +3,6 @@
 import arcpy
 import pandas as pd
 from arcgis.features import GeoAccessor, GeoSeriesAccessor
-import sys
-sys.path.append('../libs/implekml')
 import simplekml
 
 class Toolbox(object):
