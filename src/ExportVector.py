@@ -3,7 +3,7 @@
 import arcpy
 import pandas as pd
 from arcgis.features import GeoAccessor, GeoSeriesAccessor
-import simplekml
+import arcgis_exporter
 
 class Toolbox(object):
     def __init__(self):
@@ -102,28 +102,35 @@ class MapExporter(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        aprx = arcpy.mp.ArcGISProject("CURRENT")
-        map_to_export = aprx.listMaps(parameters[0].value)[0]
-        map_to_export.defaultView.exportToPNG('test.png', 1000, 1000)
+        ##MAP export as PNG file
+        self.map_to_png(parameters[0].value, 'test.png', 1000, 1000)
 
         ##CSV export
-        arcpy.conversion.TableToTable(parameters[1].value, "./", "out.csv")
+        self.featureclass_to_csv(parameters[1].value, "./", "out.csv")
 
         ##KML export
+        self.featureclass_to_kml(parameters[1].value, "data.kml")
+        
+    
+    def map_to_png(self, map, targetpath, width, height):
+        aprx = arcpy.mp.ArcGISProject("CURRENT")
+        map_to_export = aprx.listMaps(map)[0]
+        map_to_export.defaultView.exportToPNG(targetpath, width, height)
+
+    def featureclass_to_csv(self, fc, directory, filename):
+        arcpy.conversion.TableToTable(fc, directory, filename)
+
+    def featureclass_to_kml(self, fc, targetpath):
         #Reproject featureclass to WGS84
         out_coordinate_system = arcpy.SpatialReference(4326)
         arcpy.env.addOutputsToMap = False
-        arcpy.Project_management(parameters[1].value, parameters[1].value.name + "_wgs84", out_coordinate_system)
+        arcpy.Project_management(fc, fc.name + "_wgs84", out_coordinate_system)
 
         #Create a spatially enabled dataframe from featureclass
-        sdf = pd.DataFrame.spatial.from_featureclass(parameters[1].value.name + "_wgs84")
-        sdf = sdf.drop('OBJECTID', axis=1)
-
+        sdf = pd.DataFrame.spatial.from_featureclass(fc.name + "_wgs84")
+        
         #Export data to KML
-        kml = simplekml.Kml()
-        sdf.apply(lambda X: kml.newpoint(name=X["Name"], coords=[( X["SHAPE"]["x"],X["SHAPE"]["y"])]) ,axis=1)
-        kml.save(path = "data.kml")
+        arcgis_exporter.spatialdataframe_to_kml(sdf, targetpath)
 
         #Cleanup temporary layer created for reprojection
-        arcpy.Delete_management(parameters[1].value.name + "_wgs84")
-        return
+        arcpy.Delete_management(fc.name + "_wgs84")
