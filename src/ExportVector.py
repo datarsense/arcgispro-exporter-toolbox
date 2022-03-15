@@ -3,6 +3,7 @@
 import arcpy
 import pandas as pd
 from arcgis.features import GeoAccessor, GeoSeriesAccessor
+import arcpy_wrapper
 import arcgis_exporter
 
 class Toolbox(object):
@@ -121,16 +122,8 @@ class MapExporter(object):
         arcpy.conversion.TableToTable(fc, directory, filename)
 
     def featureclass_to_kml(self, fc, targetpath):
-        #Reproject featureclass to WGS84
-        out_coordinate_system = arcpy.SpatialReference(4326)
-        arcpy.env.addOutputsToMap = False
-        arcpy.Project_management(fc, fc.name + "_wgs84", out_coordinate_system)
-
-        #Create a spatially enabled dataframe from featureclass
-        sdf = pd.DataFrame.spatial.from_featureclass(fc.name + "_wgs84")
+        #Export feature class to a geojson object
+        geojson_data = arcpy_wrapper.featureclass_to_geojson(fc)
         
-        #Export data to KML
-        arcgis_exporter.spatialdataframe_to_kml(sdf, targetpath)
-
-        #Cleanup temporary layer created for reprojection
-        arcpy.Delete_management(fc.name + "_wgs84")
+        #Business function converting geojson data to KML
+        arcgis_exporter.geojson_to_kml(geojson_data, targetpath)
