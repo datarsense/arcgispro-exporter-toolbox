@@ -16,7 +16,8 @@ class TestArcgisExporter(TestCase):
                         "coordinates": [125.6, 10.1]
                     },
                     "properties": {
-                        "name": "Dinagat Islands"
+                        "name": "Dinagat Islands",
+                        "description": "Dinagat Islands description"
                     }
                 },
                 {
@@ -26,13 +27,14 @@ class TestArcgisExporter(TestCase):
                         "coordinates": [125.6, 10.1]
                     },
                     "properties": {
-                        "name": "Tangu Airport"
+                        "name": "Tangu Airport",
+                        "description": "Tangu Airport description"
                     }
                 }
             ]
         }
 
-        geojson_to_kml(test_data, 'sample.kml')
+        geojson_to_kml(test_data, 'sample.kml', ('properties','name'), ('properties','description'))
 
         #Test generated XML
         # Open JSON file

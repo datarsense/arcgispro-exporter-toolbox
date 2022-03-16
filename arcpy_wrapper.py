@@ -1,5 +1,6 @@
 import arcpy
 import pandas as pd
+from arcgis.features import GeoAccessor, GeoSeriesAccessor
 
 def list_workspaces(mxd):
         workspaces = []

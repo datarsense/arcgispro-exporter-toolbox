@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import arcpy
-import pandas as pd
-from arcgis.features import GeoAccessor, GeoSeriesAccessor
+import json
 import arcpy_wrapper
 import arcgis_exporter
 
@@ -123,7 +122,7 @@ class MapExporter(object):
 
     def featureclass_to_kml(self, fc, targetpath):
         #Export feature class to a geojson object
-        geojson_data = arcpy_wrapper.featureclass_to_geojson(fc)
-        
+        geojson_data = json.loads(arcpy_wrapper.featureclass_to_geojson(fc))
+
         #Business function converting geojson data to KML
-        arcgis_exporter.geojson_to_kml(geojson_data, targetpath)
+        arcgis_exporter.geojson_to_kml(geojson_data, targetpath, ('properties','Name'), ('properties','Description'))
