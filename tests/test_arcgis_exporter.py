@@ -2,7 +2,7 @@ from unittest import TestCase
 from mock import patch, MagicMock
 import xmltodict
 import os
-from src.arcgis_exporter import geojson_to_kml
+from arcgis_exporter import geojson_to_kml
 
 class TestArcgisExporter(TestCase):
     def test_geojson_to_kml(self):

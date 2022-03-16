@@ -1,4 +1,5 @@
 import arcpy
+import pandas as pd
 
 def list_workspaces(mxd):
         workspaces = []
