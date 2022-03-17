@@ -1,0 +1,3 @@
+[submodule "tests/surrogate"]
+	path = tests/surrogate
+	url = git@github.com:cristi-zz/surrogate.git
