@@ -34,7 +34,7 @@ class TestArcgisExporter(TestCase):
             ]
         }
 
-        geojson_to_kml(test_data, 'sample.kml', ('properties','name'), ('properties','description'))
+        geojson_to_kml(test_data, 'sample.kml','name', 'description')
 
         #Test generated XML
         # Open JSON file

@@ -82,7 +82,27 @@ class MapExporter(object):
             parameterType="Required",
             direction="Input")
 
-        params = [sourcemap, sourcelayer]
+        namefield = arcpy.Parameter(
+            displayName="KML name field",
+            name="in_namefield",
+            datatype="GPString",
+            parameterType="Required",
+            enabled=False,
+            direction="Input")
+        namefield.filter.type = "ValueList"
+        namefield.filter.list = []
+
+        descriptionfield = arcpy.Parameter(
+            displayName="KML description field",
+            name="in_descriptionfield",
+            datatype="GPString",
+            parameterType="Required",
+            enabled=False,
+            direction="Input")
+        namefield.filter.type = "ValueList"
+        namefield.filter.list = []
+
+        params = [sourcemap, sourcelayer, namefield, descriptionfield]
         return params
 
     def isLicensed(self):
@@ -93,6 +113,21 @@ class MapExporter(object):
         """Modify the values and properties of parameters before internal
         validation is performed.  This method is called whenever a parameter
         has been changed."""
+        # if the input table view is changed
+        if parameters[1].altered:
+            inputTable = parameters[1].value
+
+            # Iterate through the fields
+            fieldlist = []
+            for field in arcpy.ListFields(inputTable):
+                fieldlist.append(field.name)
+            
+            parameters[2].filter.list = fieldlist
+            parameters[2].enabled = True
+
+            parameters[3].filter.list = fieldlist
+            parameters[3].enabled = True
+ 
         return
 
     def updateMessages(self, parameters):
@@ -109,7 +144,7 @@ class MapExporter(object):
         self.featureclass_to_csv(parameters[1].value, "./", "out.csv")
 
         ##KML export
-        self.featureclass_to_kml(parameters[1].value, "data.kml")
+        self.featureclass_to_kml(parameters[1].value, "data.kml", parameters[2].value, parameters[3].value)
         
     
     def map_to_png(self, map, targetpath, width, height):
@@ -120,9 +155,9 @@ class MapExporter(object):
     def featureclass_to_csv(self, fc, directory, filename):
         arcpy.conversion.TableToTable(fc, directory, filename)
 
-    def featureclass_to_kml(self, fc, targetpath):
+    def featureclass_to_kml(self, fc, targetpath, kmlobjectnamefield, kmlobjectdescfield):
         #Export feature class to a geojson object
         geojson_data = json.loads(arcpy_wrapper.featureclass_to_geojson(fc))
 
         #Business function converting geojson data to KML
-        arcgis_exporter.geojson_to_kml(geojson_data, targetpath, ('properties','Name'), ('properties','Description'))
+        arcgis_exporter.geojson_to_kml(geojson_data, targetpath, kmlobjectnamefield, kmlobjectdescfield)
