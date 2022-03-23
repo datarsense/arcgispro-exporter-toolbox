@@ -156,8 +156,9 @@ class MapExporter(object):
         arcpy.conversion.TableToTable(fc, directory, filename)
 
     def featureclass_to_kml(self, fc, targetpath, kmlobjectnamefield, kmlobjectdescfield):
-        #Export feature class to a geojson object
-        geojson_data = json.loads(arcpy_wrapper.featureclass_to_geojson(fc))
+        #Export feature class to a geojson object and reproject to WGS84 (SR 4326)
+        featureset_data = arcpy_wrapper.featureclass_to_featureset(fc.name, 4326)
+        geojson_data = arcpy_wrapper.featureset_to_geojson(featureset_data)
 
         #Business function converting geojson data to KML
         arcgis_exporter.geojson_to_kml(geojson_data, targetpath, kmlobjectnamefield, kmlobjectdescfield)
