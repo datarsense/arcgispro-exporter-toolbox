@@ -12,7 +12,7 @@ def list_workspaces(mxd):
         return workspaces
 
 # Export Arcgis featureclass to feature set and optionnally reproject it to target SR
-def featureclass_to_featureset(fc: str, sr: int=None) -> arcpy.FeatureSet:
+def featureclass_to_featureset(fc: str, sr: int=None):
     #Create a spatially enabled dataframe from featureclass and convert it to a geojson_data object
     #https://gis.stackexchange.com/questions/418040/converting-arcgis-spatially-enabled-dataframe-to-geojson_data
     sdf = pd.DataFrame.spatial.from_featureclass(fc)
@@ -25,5 +25,6 @@ def featureclass_to_featureset(fc: str, sr: int=None) -> arcpy.FeatureSet:
 
     return sdf.spatial.to_featureset()
 
-def featureset_to_geojson(fs: arcpy.FeatureSet) -> dict:
+# Convert an arcpy.FeatureSet object to geojson
+def featureset_to_geojson(fs) -> dict:
     return json.loads(fs.to_geojson)
